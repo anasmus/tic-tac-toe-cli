@@ -1,5 +1,7 @@
 import os
+from random import choice as random_choice
 WIDTH = os.get_terminal_size().columns
+
 def main():
   display_guide()
   available_moves = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -104,33 +106,47 @@ def declare_tie(board):
   exit(0)
 
 def minimax(available_moves, board, user_turn=True):
-  move_matrices = []
   winner = check_winner(board)
   if winner:
     return 10 if winner == "X" else -10
   if (len(available_moves) == 0):
     return 0
 
-  for move in available_moves:
-    remaining_moves = [x for x in available_moves]
-    remaining_moves.remove(move)
-    new_board = [x for x in board]
-    new_board[move - 1] = "X" if user_turn else "O"
-    move_matrices.append(minimax(remaining_moves, new_board, not(user_turn)))
+  if user_turn:
+    score = -1000
+    for move in available_moves:
+      remaining_moves, new_board = create_board(available_moves, board, move, "X")
+      score = max(score, minimax(remaining_moves, new_board, not(user_input)))
+  else:
+    score = 1000
+    for move in available_moves:
+      remaining_moves, new_board = create_board(available_moves, board, move, "O")
+      score = min(score, minimax(remaining_moves, new_board, not(user_input)))
 
-  return max(move_matrices) if user_turn else min(move_matrices)
+  return score
+
+def create_board(available_moves, board, move, symbol):
+  remaining_moves = [x for x in available_moves]
+  remaining_moves.remove(move)
+  new_board = [x for x in board]
+  new_board[move - 1] = symbol
+  return remaining_moves, new_board
 
 def bot_input(available_moves, board):
-  move_dict = {"value":9999}
-  for move in available_moves:
-    remaining_moves = [x for x in available_moves]
-    remaining_moves.remove(move)
-    new_board = [x for x in board]
-    new_board[move - 1] = "O"
-    move_matrix = minimax(remaining_moves, new_board)
-    move_dict = {"value": move_matrix, "index": move} if move_matrix < move_dict["value"] else move_dict
-    
-  move = move_dict["index"]
+  # keeping track of move with each score at top level
+  if board.count("O") != 0:
+    move_dict = {"value":1000}
+    for move in available_moves:
+      remaining_moves = [x for x in available_moves]
+      remaining_moves.remove(move)
+      new_board = [x for x in board]
+      new_board[move - 1] = "O"
+      move_matrix = minimax(remaining_moves, new_board)
+      move_dict = {"value": move_matrix, "index": move} if move_matrix < move_dict["value"] else move_dict
+      
+    move = move_dict["index"]
+  else:
+    move = random_choice(available_moves)
   print(f"Bot Played {move}")
   input("Press any key to continue...")
   update_status(available_moves, board, move, "O")
