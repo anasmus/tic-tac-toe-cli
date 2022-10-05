@@ -87,13 +87,13 @@ def display_guide():
   cls()
 
 def display_board(input_list):
-  print(f"-------------".center(WIDTH))
+  print("-------------".center(WIDTH))
   print(f"| {input_list[0]} | {input_list[1]} | {input_list[2]} |".center(WIDTH))
-  print(f"-------------".center(WIDTH))
+  print("-------------".center(WIDTH))
   print(f"| {input_list[3]} | {input_list[4]} | {input_list[5]} |".center(WIDTH))
-  print(f"-------------".center(WIDTH))
+  print("-------------".center(WIDTH))
   print(f"| {input_list[6]} | {input_list[7]} | {input_list[8]} |".center(WIDTH))
-  print(f"-------------".center(WIDTH))
+  print("-------------".center(WIDTH))
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
