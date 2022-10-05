@@ -1,18 +1,17 @@
 import os
-from random import choice as random_choice
 WIDTH = os.get_terminal_size().columns
 def main():
   display_guide()
   available_moves = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-  movelist = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
-  display_board(movelist)
+  board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+  display_board(board)
   while True:
-    user_input(available_moves, movelist)
+    user_input(available_moves, board)
     if not available_moves:
-      declare_tie(movelist)
-    bot_input(available_moves, movelist)
+      declare_tie(board)
+    bot_input(available_moves, board)
 
-def user_input(available_moves, movelist):
+def user_input(available_moves, board):
   print("\n")
   move = 0
   while not move in available_moves:
@@ -21,47 +20,57 @@ def user_input(available_moves, movelist):
     except:
       print("Please Enter a Number corresponding to Your Move")
       move = 0
-  update_status(available_moves, movelist, move, "X")
+  update_status(available_moves, board, move, "X")
 
-def update_status(available_moves, movelist, current_move, symbol):
+def update_status(available_moves, board, current_move, symbol):
   available_moves.remove(current_move)
-  movelist[current_move - 1] = symbol
-  update_board(movelist)
-  check_game(movelist, symbol)
+  board[current_move - 1] = symbol
+  update_board(board)
+  check_game(board, symbol)
 
-def update_board(movelist):
+def update_board(board):
   cls()
-  display_board(movelist)
+  display_board(board)
 
-def check_game(movelist, symbol):
-  if movelist.count(symbol) < 3:
+def check_game(board, symbol):
+  if board.count(symbol) < 3:
     return 
   else:
-    winner = check_winner(movelist)
+    winner = check_winner(board)
     if winner:
-      update_board(movelist)
+      update_board(board)
       print("\n")
       print("You won!".center(WIDTH)) if winner == "X" else print("You lose!".center(WIDTH))
-      if (winner == "O"):
-        print("You Have Lost from a Bot Making Random Moves".center(WIDTH))
-        print("You Must Be Ashamed of Yourself".center(WIDTH))
       print("\n")
       exit(0)
 
-def check_winner(movelist):
-  winner = None
-  # checking for vertical and horizontal lines
+def check_winner(board):
+  # checking for vertical lines
   for i in range(3):
-    if (movelist[i] == movelist[i + 3] == movelist[i + 6]):
-      winner = movelist[i] if movelist[i] != " " else None
-    elif (movelist[3 * i] == movelist[3 * i + 1] == movelist[3 * i + 2]):
-      winner = movelist[3 * i] if movelist[3 * i] != " " else None
+    if (board[i] == board[i + 3] == board[i + 6] == "X"):
+      return "X"
+    elif (board[i] == board[i + 3] == board[i + 6] == "O"):
+      return "O"
+
+  # checking horizontal lines
+  for i in [0, 3, 6]:
+    if (board[i] == board[i + 1] == board[i + 2] == "X"):
+      return "X"
+    elif (board[i] == board[i + 1] == board[i + 2] == "O"):
+      return "O"
+
   # checking for diagonal lines
-  if ((movelist[0] == movelist[4] == movelist[8]) or 
-          (movelist[6] == movelist[4] == movelist[2])):
-    winner = movelist[4] if movelist[4] != " " else None
+  if (board[0] == board[4] == board[8] == "X"):
+    return "X"
+  elif (board[0] == board[4] == board[8] == "O"):
+    return "O"
+  elif (board[6] == board[4] == board[2] == "X"):
+    return "X"
+  elif (board[6] == board[4] == board[2] == "O"):
+    return "O"
   
-  return winner
+  # if nothing matches
+  return None
 
 def display_guide():
   cls()
@@ -87,16 +96,16 @@ def display_board(input_list):
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
-def declare_tie(movelist):
-  update_board(movelist)
+def declare_tie(board):
+  update_board(board)
   print()
   print("It's a Tie".center(WIDTH))
   print("\n")
   exit(0)
 
-def minimax(available_moves, movelist, user_turn=True):
+def minimax(available_moves, board, user_turn=True):
   move_matrices = []
-  winner = check_winner(movelist)
+  winner = check_winner(board)
   if winner:
     return 10 if winner == "X" else -10
   if (len(available_moves) == 0):
@@ -105,26 +114,26 @@ def minimax(available_moves, movelist, user_turn=True):
   for move in available_moves:
     remaining_moves = [x for x in available_moves]
     remaining_moves.remove(move)
-    new_movelist = [x for x in movelist]
-    new_movelist[move - 1] = "X" if user_turn else "O"
-    move_matrices.append(minimax(remaining_moves, new_movelist, not(user_turn)))
+    new_board = [x for x in board]
+    new_board[move - 1] = "X" if user_turn else "O"
+    move_matrices.append(minimax(remaining_moves, new_board, not(user_turn)))
 
   return max(move_matrices) if user_turn else min(move_matrices)
 
-def bot_input(available_moves, movelist):
+def bot_input(available_moves, board):
   move_dict = {"value":9999}
   for move in available_moves:
     remaining_moves = [x for x in available_moves]
     remaining_moves.remove(move)
-    new_movelist = [x for x in movelist]
-    new_movelist[move - 1] = "O"
-    move_matrix = minimax(remaining_moves, new_movelist)
+    new_board = [x for x in board]
+    new_board[move - 1] = "O"
+    move_matrix = minimax(remaining_moves, new_board)
     move_dict = {"value": move_matrix, "index": move} if move_matrix < move_dict["value"] else move_dict
     
   move = move_dict["index"]
   print(f"Bot Played {move}")
   input("Press any key to continue...")
-  update_status(available_moves, movelist, move, "O")
+  update_status(available_moves, board, move, "O")
 
 if __name__ == "__main__":
   main()
